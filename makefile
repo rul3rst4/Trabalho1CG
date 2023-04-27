@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Iinclude -Iimgui -Iimgui/backends $(shell pkg-config --cflags glfw3 glew)
-LDFLAGS = -L$(CMAKE_SOURCE_DIR)/resource -Wl,-rpath,'$$ORIGIN/resource' $(shell pkg-config --libs glfw3 glew) -lGL -lzlibstatic -lassimp
+LDFLAGS = -L$(CMAKE_SOURCE_DIR)/resource -Wl,-rpath,'$$ORIGIN/resource' $(shell pkg-config --libs glfw3 glew) -lGL -Lresource -lzlibstatic -lassimp
 
 SRCS = main.cpp \
        imgui/imgui.cpp \
