@@ -38,7 +38,7 @@ void Camera::update() {
         ProcessKeyboard(FORWARD, io.DeltaTime);
     }
 
-    if (ImGui::IsKeyPressed(ImGuiKey_S)) {
+    if (ImGui::IsKeyPressed(ImGuiKey_X)) {
         ProcessKeyboard(BACKWARD, io.DeltaTime);
     }
 
