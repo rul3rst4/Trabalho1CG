@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 Renderer::Renderer(std::string model_path) {
-    std::string pathNameCube = R"(./resource/cube.obj)";
+    std::string pathNameCube = R"(./resource/cube.object)";
     models.emplace_back(pathNameCube.c_str());
     add_model_path(pathNameCube);
     add_bounding_box(models.back());
