@@ -6,7 +6,7 @@
 #define TRABALHO1_SHADERPROGRAM_H
 
 #include <GL/glew.h>
-#include "GlHelpers.h"
+#include "GLHelpers.h"
 #include <fstream>
 #include <sstream>
 

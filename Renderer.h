@@ -6,7 +6,7 @@
 #define TRABALHO1_RENDERER_H
 
 #include "ShaderProgram.h"
-#include "GlHelpers.h"
+#include "GLHelpers.h"
 #include "Model.h"
 #include <iostream>
 #include <glm/glm.hpp>

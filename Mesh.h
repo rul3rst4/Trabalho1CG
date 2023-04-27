@@ -14,7 +14,7 @@
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include <GL/glew.h>
-#include "GlHelpers.h"
+#include "GLHelpers.h"
 #include <vector>
 
 struct Vertex {
