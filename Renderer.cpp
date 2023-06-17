@@ -5,12 +5,55 @@
 #include "Renderer.h"
 #include <imgui_internal.h>
 #include <stdio.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+unsigned int loadCubemap(std::vector<std::string> faces)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+    for (unsigned int i = 0; i < faces.size(); i++)
+    {
+        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        if (data)
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
+            );
+            stbi_image_free(data);
+        }
+        else
+        {
+            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+            stbi_image_free(data);
+        }
+    }
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
+}
 
 Renderer::Renderer(std::string model_path) {
     std::string pathNameCube = R"(./resource/cube.object)";
     models.emplace_back(pathNameCube.c_str());
     add_model_path(pathNameCube);
     add_bounding_box(models.back());
+
+    cubemapId = loadCubemap({
+                "./resource/skybox/right.jpg",
+                "./resource/skybox/left.jpg",
+                "./resource/skybox/top.jpg",
+                "./resource/skybox/bottom.jpg",
+                "./resource/skybox/front.jpg",
+                "./resource/skybox/back.jpg"
+    });
 
     if (!model_path.empty()) {
         models.emplace_back(model_path.c_str());
@@ -56,6 +99,15 @@ void Renderer::add_coordinate_system() {
     models.emplace_back(model);
 }
 
+void flip_bit(ObjectSelectMode &mode, ObjectSelectMode bit) {
+    mode = static_cast<ObjectSelectMode>(static_cast<int>(mode) ^ static_cast<int>(bit));
+}
+
+void activate_transform_mode(ObjectSelectMode &mode, ObjectSelectMode bit) {
+    mode = static_cast<ObjectSelectMode>(mode & (ObjectSelectMode::Lighting | ObjectSelectMode::Texture | ObjectSelectMode::NormalMap));
+    flip_bit(mode, bit);
+}
+
 void Renderer::draw() {
     shaderProgram.use();
 
@@ -63,16 +115,25 @@ void Renderer::draw() {
 
     if (ImGui::IsKeyPressed(ImGuiKey_T)){
         freeMode = false;
-        objectSelectMode = ObjectSelectMode::Translate;
+        activate_transform_mode(objectSelectMode, ObjectSelectMode::Translate);
     } else if (ImGui::IsKeyPressed(ImGuiKey_R)){
         freeMode = false;
-        objectSelectMode = ObjectSelectMode::Rotate;
+        activate_transform_mode(objectSelectMode, ObjectSelectMode::Rotate);
     } else if (ImGui::IsKeyPressed(ImGuiKey_S)){
         freeMode = false;
-        objectSelectMode = ObjectSelectMode::Scale;
+        activate_transform_mode(objectSelectMode, ObjectSelectMode::Scale);
+    } else if (ImGui::IsKeyPressed(ImGuiKey_1)){
+        freeMode = false;
+        flip_bit(objectSelectMode, ObjectSelectMode::Lighting);
+    } else if (ImGui::IsKeyPressed(ImGuiKey_2)){
+        freeMode = false;
+        flip_bit(objectSelectMode, ObjectSelectMode::Texture);
+    } else if (ImGui::IsKeyPressed(ImGuiKey_3)){
+        freeMode = false;
+        flip_bit(objectSelectMode, ObjectSelectMode::NormalMap);
     } else if (ImGui::IsKeyPressed(ImGuiKey_E)){
         freeMode = true;
-        objectSelectMode = ObjectSelectMode::None;
+        objectSelectMode = static_cast<ObjectSelectMode>(objectSelectMode & (ObjectSelectMode::Lighting |ObjectSelectMode::Texture |ObjectSelectMode::NormalMap));
     }
 
     float mouseX_NDC = (2.0f * mouse_pos.x) / display_w - 1.0f;
@@ -163,6 +224,8 @@ void Renderer::draw() {
             unsigned int lightColorFrag = glGetUniformLocation(shaderProgram.programID, "lightColor");
             unsigned int lightPosFrag = glGetUniformLocation(shaderProgram.programID, "lightPos");
             unsigned int viewPosFrag = glGetUniformLocation(shaderProgram.programID, "viewPos");
+            unsigned int isLighting = glGetUniformLocation(shaderProgram.programID, "isLighting");
+            unsigned int isTexture = glGetUniformLocation(shaderProgram.programID, "isTexture");
 
             glm::mat4 modelTransform = glm::mat4(1.0f);
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &modelTransform[0][0]);
@@ -171,6 +234,15 @@ void Renderer::draw() {
             glUniform3f(lightColorFrag, 1.0f, 1.0f, 1.0f);
             glUniform3f(lightPosFrag, lightPos.x, lightPos.y, lightPos.z);
             glUniform3f(viewPosFrag, camera.Position.x, camera.Position.y, camera.Position.z);
+            glUniform1i(isLighting, ((int)objectSelectMode & (int)ObjectSelectMode::Lighting) != 0);
+            bool isTextureOn = ((int)objectSelectMode & (int)ObjectSelectMode::Texture) != 0;
+            glUniform1i(isTexture, isTextureOn);
+
+            if (isTextureOn) {
+                glUniform1i(glGetUniformLocation(shaderProgram.programID, "cubemap"), 0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
+                glActiveTexture(GL_TEXTURE0);
+            }
 
             model.draw(shaderProgram);
         } else {
@@ -308,7 +380,7 @@ void Renderer::add_bounding_box(Model &model) {
 void Renderer::apply_transform_based_on_mode(Axis axis, float value) {
     if (objectSelectMode == ObjectSelectMode::None) {
         return;
-    } else if (objectSelectMode == ObjectSelectMode::Translate) {
+    } else if (objectSelectMode & ObjectSelectMode::Translate) {
         if (axis == Axis::X) {
             translate.x += value;
         } else if (axis == Axis::Y) {
@@ -316,7 +388,7 @@ void Renderer::apply_transform_based_on_mode(Axis axis, float value) {
         } else if (axis == Axis::Z) {
             translate.z += value;
         }
-    } else if (objectSelectMode == ObjectSelectMode::Rotate) {
+    } else if (objectSelectMode & ObjectSelectMode::Rotate) {
         if (axis == Axis::X) {
             rotate_axis = glm::vec3(0.0f, 1.0f, 0.0f);
             angles.y += value;
@@ -327,7 +399,7 @@ void Renderer::apply_transform_based_on_mode(Axis axis, float value) {
             rotate_axis = glm::vec3(0.0f, 0.0f, 1.0f);
             angles.z += value;
         }
-    } else if (objectSelectMode == ObjectSelectMode::Scale) {
+    } else if (objectSelectMode & ObjectSelectMode::Scale) {
         if (axis == Axis::X) {
             scale.x += value;
         } else if (axis == Axis::Y) {

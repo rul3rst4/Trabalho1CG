@@ -24,11 +24,14 @@ enum SceneMode : int {
     COUNT
 };
 
-enum class ObjectSelectMode : int {
-    None = 0,
-    Translate,
-    Rotate,
-    Scale
+enum ObjectSelectMode : int {
+    None = 0x00,
+    Translate = 0x01,
+    Rotate = 0x02,
+    Scale = 0x04,
+    Lighting = 0x08,
+    Texture = 0x10,
+    NormalMap = 0x20
 };
 
 enum class Axis : int {
@@ -55,6 +58,7 @@ public:
     glm::vec3 translate{0.0f, 0.0f, 0.0f};
     glm::vec3 rotate_axis{0.0f, 1.0f, 0.0f};
     glm::vec3 angles{0.0f, 0.0f, 0.0f};
+    unsigned int cubemapId = -1;
 
 
     Renderer(std::string model_path = "");

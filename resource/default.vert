@@ -3,6 +3,7 @@ in vec3 position;
 in vec3 normal;
 
 out vec4 fragColor;
+out vec3 TexCoords;
 out vec3 FragPos;
 out vec3 Normal;
 
@@ -18,4 +19,5 @@ void main()
     gl_Position = projection * view * vec4(FragPos, 1.0);
 
 	fragColor = vec4(position, 1.0);
+    TexCoords = position;
 }

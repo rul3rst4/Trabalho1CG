@@ -6,7 +6,7 @@ SET(CMAKE_SKIP_BUILD_RPATH FALSE)
 SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 SET(CMAKE_INSTALL_RPATH "\${ORIGIN}/resource")
 
-#find_package(assimp CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(glfw3 CONFIG REQUIRED)
@@ -18,7 +18,7 @@ include_directories("include")
 include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${GLFW_INCLUDE_DIR})
 include_directories(${GLEW_INCLUDE_DIR})
-#include_directories(${ASSIMP_INCLUDE_DIRS})
+include_directories(${ASSIMP_INCLUDE_DIRS})
 
 file(GLOB resources "./resource")
 
@@ -31,5 +31,5 @@ add_executable(mesh main.cpp ./imgui/imgui.cpp ./imgui/imgui_demo.cpp ./imgui/im
         ./imgui/misc/cpp/imgui_stdlib.cpp ./imgui/misc/cpp/imgui_stdlib.h Renderer.cpp
         Renderer.h ShaderProgram.cpp ShaderProgram.h GLHelpers.h Model.cpp Model.h Mesh.cpp Mesh.h Camera.cpp Camera.h)
 
-#target_link_libraries(mesh PRIVATE glfw GLEW::GLEW ${OPENGL_LIBRARIES} assimp::assimp)
-target_link_libraries(mesh PRIVATE glfw GLEW::GLEW ${OPENGL_LIBRARIES} ${CMAKE_SOURCE_DIR}/resource/libzlibstatic.a ${CMAKE_SOURCE_DIR}/resource/libassimp.so)
+target_link_libraries(mesh PRIVATE glfw GLEW::GLEW ${OPENGL_LIBRARIES} assimp::assimp)
+#target_link_libraries(mesh PRIVATE glfw GLEW::GLEW ${OPENGL_LIBRARIES} ${CMAKE_SOURCE_DIR}/resource/libzlibstatic.a ${CMAKE_SOURCE_DIR}/resource/libassimp.so)
