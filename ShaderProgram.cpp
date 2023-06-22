@@ -40,8 +40,10 @@ ShaderProgram::ShaderProgram(const char *fragShaderPath, const char *vertexShade
     programID = GLResultCall(glCreateProgram());
     GLCall(glAttachShader(programID, vertexShaderID));
     GLCall(glAttachShader(programID, fragmentShaderID));
-    GLCall(glBindAttribLocation(programID, AttributeIndex::ATTRIBUTE_POSITION, "position"));
-    GLCall(glBindAttribLocation(programID, AttributeIndex::ATTRIBUTE_NORMAL, "normal"));
+    GLCall(glBindAttribLocation(programID, AttributeIndex::ATTRIBUTE_POSITION, "aPos"));
+    GLCall(glBindAttribLocation(programID, AttributeIndex::ATTRIBUTE_NORMAL, "aNormal"));
+    GLCall(glBindAttribLocation(programID, AttributeIndex::ATTRIBUTE_TANGENT, "aTangent"));
+    GLCall(glBindAttribLocation(programID, AttributeIndex::ATTRIBUTE_BITANGENT, "aBitangent"));
     GLCall(glLinkProgram(programID));
     glDetachShader(programID, vertexShaderID);
     glDetachShader(programID, fragmentShaderID);

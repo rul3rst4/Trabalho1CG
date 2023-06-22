@@ -21,20 +21,22 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     mouse_pos.y = ypos;
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);
-    std::cout << "Mouse X: " << xpos << ", Y: " << ypos << std::endl;
 }
 
 // Main code
 int main(int argc, char** argv)
 {
-    if (argc < 2) {
-        std::cerr << "Usage: " << argv[0] << " <model_path>" << std::endl;
+    if (argc < 4) {
+        std::cerr << "Usage: " << argv[0] << " <model_path> <texture_path> <normal_map_path>" << std::endl;
         return -1;
     }
 
-    if (!std::filesystem::exists(argv[1])) {
-        std::cerr << "Error: " << argv[1] << " does not exist" << std::endl;
-        return -1;
+    for (int i =1; i<argc; i++) {
+        if (!std::filesystem::exists(argv[i])) {
+            std::cerr << "Error: " << argv[1] << " does not exist" << std::endl;
+            std::cerr << "Usage: " << argv[0] << " <model_path> <texture_path> <normal_map_path>" << std::endl;
+            return -1;
+        }
     }
 
     glfwSetErrorCallback(glfw_error_callback);
@@ -94,10 +96,11 @@ int main(int argc, char** argv)
     // Our state
     bool show_demo_window = true;
     auto clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    Renderer renderer(argv[1]);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_DEPTH_TEST);
+
+    Renderer renderer(argv[1], argv[2], argv[3]);
 
     bool wireframe_mode = false;
     GLuint zbuffer_bit = GL_DEPTH_BUFFER_BIT;

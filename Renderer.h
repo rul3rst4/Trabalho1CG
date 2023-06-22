@@ -59,9 +59,10 @@ public:
     glm::vec3 rotate_axis{0.0f, 1.0f, 0.0f};
     glm::vec3 angles{0.0f, 0.0f, 0.0f};
     unsigned int cubemapId = -1;
+    unsigned int normalMapId = -1;
 
 
-    Renderer(std::string model_path = "");
+    Renderer(std::string model_path = "", std::string texture_path = "", std::string normal_map_path = "");
     void draw();
     void add_model_path(const std::string_view& path);
     void list_models();

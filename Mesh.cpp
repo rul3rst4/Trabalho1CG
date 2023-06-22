@@ -39,8 +39,14 @@ void Mesh::setupMesh() {
     glVertexAttribPointer(AttributeIndex::ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
     GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_NORMAL));
 
-    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TEXCOORD, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
     GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_TEXCOORD));
+
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+    GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_TANGENT));
+
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_BITANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+    GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_BITANGENT));
 
     glBindVertexArray(0);
 }
@@ -60,8 +66,14 @@ void Mesh::updateMesh() {
     glVertexAttribPointer(AttributeIndex::ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
     GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_NORMAL));
 
-    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TEXCOORD, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
     GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_TEXCOORD));
+
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+    GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_TANGENT));
+
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_BITANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+    GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_BITANGENT));
 
     glBindVertexArray(0);
 }
@@ -104,8 +116,14 @@ void Mesh::updateVectors() {
     glVertexAttribPointer(AttributeIndex::ATTRIBUTE_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
     GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_NORMAL));
 
-    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TEXCOORD, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
     GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_TEXCOORD));
+
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_TANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
+    GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_TANGENT));
+
+    glVertexAttribPointer(AttributeIndex::ATTRIBUTE_BITANGENT, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+    GLCall(glEnableVertexAttribArray(AttributeIndex::ATTRIBUTE_BITANGENT));
 
     glBindVertexArray(0);
 }

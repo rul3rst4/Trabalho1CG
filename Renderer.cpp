@@ -40,20 +40,93 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     return textureID;
 }
 
-Renderer::Renderer(std::string model_path) {
+unsigned int loadCubemap(std::string face) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+    int width, height, nrChannels;
+
+    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load(face.c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 0,
+                     0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 1,
+                     0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 2,
+                     0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 3,
+                     0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 4,
+                     0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + 5,
+                     0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Cubemap tex failed to load at path: " << face << std::endl;
+        stbi_image_free(data);
+    }
+
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    return textureID;
+}
+
+unsigned int LoadNormalMap(std::string path) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    int width, height, nrChannels;
+
+//    stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0);
+    if (data)
+    {
+        GLenum format{};
+        if (nrChannels == 1)
+            format = GL_RED;
+        else if (nrChannels == 3)
+            format = GL_RGB;
+        else if (nrChannels == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else
+    {
+        std::cout << "Normal map tex failed to load at path: " << path << std::endl;
+    }
+
+    stbi_image_free(data);
+    return textureID;
+}
+
+Renderer::Renderer(std::string model_path, std::string texture_path, std::string normal_map_path) {
     std::string pathNameCube = R"(./resource/cube.object)";
     models.emplace_back(pathNameCube.c_str());
     add_model_path(pathNameCube);
     add_bounding_box(models.back());
 
-    cubemapId = loadCubemap({
-                "./resource/skybox/right.jpg",
-                "./resource/skybox/left.jpg",
-                "./resource/skybox/top.jpg",
-                "./resource/skybox/bottom.jpg",
-                "./resource/skybox/front.jpg",
-                "./resource/skybox/back.jpg"
-    });
+    cubemapId = loadCubemap(texture_path);
+    normalMapId = loadCubemap(normal_map_path);
 
     if (!model_path.empty()) {
         models.emplace_back(model_path.c_str());
@@ -220,28 +293,38 @@ void Renderer::draw() {
         } else if(index == models.size() - 1) {
             shaderProgram.use();
 
-            unsigned int objectColorFrag = glGetUniformLocation(shaderProgram.programID, "objectColor");
             unsigned int lightColorFrag = glGetUniformLocation(shaderProgram.programID, "lightColor");
             unsigned int lightPosFrag = glGetUniformLocation(shaderProgram.programID, "lightPos");
             unsigned int viewPosFrag = glGetUniformLocation(shaderProgram.programID, "viewPos");
             unsigned int isLighting = glGetUniformLocation(shaderProgram.programID, "isLighting");
             unsigned int isTexture = glGetUniformLocation(shaderProgram.programID, "isTexture");
+            unsigned int isNormalMap = glGetUniformLocation(shaderProgram.programID, "isNormalMap");
 
             glm::mat4 modelTransform = glm::mat4(1.0f);
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &modelTransform[0][0]);
 
-            glUniform3f(objectColorFrag, 1.0f, 0.5f, 0.31f);
             glUniform3f(lightColorFrag, 1.0f, 1.0f, 1.0f);
             glUniform3f(lightPosFrag, lightPos.x, lightPos.y, lightPos.z);
             glUniform3f(viewPosFrag, camera.Position.x, camera.Position.y, camera.Position.z);
             glUniform1i(isLighting, ((int)objectSelectMode & (int)ObjectSelectMode::Lighting) != 0);
             bool isTextureOn = ((int)objectSelectMode & (int)ObjectSelectMode::Texture) != 0;
             glUniform1i(isTexture, isTextureOn);
+            bool isNormalMapOn = ((int)objectSelectMode & (int)ObjectSelectMode::NormalMap) != 0;
+            glUniform1i(isNormalMap, isNormalMapOn);
+
 
             if (isTextureOn) {
-                glUniform1i(glGetUniformLocation(shaderProgram.programID, "cubemap"), 0);
-                glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
+                auto cubeMapLocation = glGetUniformLocation(shaderProgram.programID, "cubemap");
+                glUniform1i(cubeMapLocation, 0);
                 glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapId);
+            }
+
+            if (isNormalMapOn) {
+                auto normalMapLocation = glGetUniformLocation(shaderProgram.programID, "normalMap");
+                glUniform1i(normalMapLocation, 1);
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_CUBE_MAP, normalMapId);
             }
 
             model.draw(shaderProgram);

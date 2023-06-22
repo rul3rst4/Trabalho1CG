@@ -13,7 +13,9 @@ enum AttributeIndex : GLuint
     ATTRIBUTE_POSITION = 0,
     ATTRIBUTE_COLOR = 1,
     ATTRIBUTE_NORMAL = 2,
-    ATTRIBUTE_TEXCOORD = 3,
+    ATTRIBUTE_TANGENT = 3,
+    ATTRIBUTE_BITANGENT = 4,
+    ATTRIBUTE_TEXCOORD = 5,
 };
 
 static inline const std::string CubeObject = R"OBJ(

@@ -34,7 +34,7 @@ void Model::loadModel(std::string path)
     Assimp::Importer importer;
     importer.SetPropertyInteger(AI_CONFIG_PP_PTV_NORMALIZE, 1);
 
-    const aiScene* scene = importer.ReadFile(path, aiProcess_PreTransformVertices | aiProcess_FlipUVs | aiProcessPreset_TargetRealtime_MaxQuality );
+    const aiScene* scene = importer.ReadFile(path, aiProcess_PreTransformVertices | aiProcess_FlipUVs | aiProcess_CalcTangentSpace |aiProcessPreset_TargetRealtime_MaxQuality );
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
     {
@@ -93,6 +93,19 @@ Mesh Model::processMesh(aiMesh* mesh, const aiScene* scene)
         vector.y = mesh->mNormals[i].y;
         vector.z = mesh->mNormals[i].z;
         vertex.Normal = vector;
+
+
+        if (mesh->HasTangentsAndBitangents()) {
+            vector.x = mesh->mTangents[i].x;
+            vector.y = mesh->mTangents[i].y;
+            vector.z = mesh->mTangents[i].z;
+            vertex.Tangent = vector;
+
+            vector.x = mesh->mBitangents[i].x;
+            vector.y = mesh->mBitangents[i].y;
+            vector.z = mesh->mBitangents[i].z;
+            vertex.Bitangent = vector;
+        }
 
         vertices.push_back(vertex);
     }
